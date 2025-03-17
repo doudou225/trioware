@@ -1,5 +1,6 @@
 provider "aws" {
-  region = basename(path.cwd)
+  region  = basename(path.cwd)
+  profile = var.profile
 }
 
 module "create_s3_bucket" {
