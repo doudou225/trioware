@@ -1,7 +1,0 @@
-r7_linux_version      = "4.0.12.14"
-path_sophos_windows   = "D:\\temp\\sophos.exe"
-path_sophos_linux     = "D:\\temp\\sophos.sh"
-path_r7_windows       = "D:\\temp\\agentInstaller-x86_64.msi"
-path_r7_deb_linux_x64 = "D:\\temp\\rapid7_x64.deb"
-path_pmp_windows      = "D:\\temp\\pmp.zip"
-path_pmp_linux        = "D:\\temp\\pmp_linux.zip"
