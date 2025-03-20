@@ -202,7 +202,7 @@ resource "aws_ssm_document" "duo_linux" {
 
   content = <<DOC
 schemaVersion: "2.2"
-description: Install Sophos, Rapid7 from S3 for Ubuntu-debian based servers
+description: Install Sophos, Rapid7 from S3 for debian based servers
 parameters:
   token:
     type: String
@@ -246,16 +246,22 @@ mainSteps:
       timeoutSeconds: "{{ executionTimeout }}"
       runCommand:
         - |
+          #!/usr/bin/env bash
+
           wdir=/tmp/dco-705924564
          
           sudo su
 
           if [ -d "$wdir" ]
           then
+
               cd "$wdir"
+
           else
-              echo "Unable to locate the download directory $wdir"
+
+              echo "$wdir not found"
             exit 99
+
           fi
 
 
@@ -263,15 +269,15 @@ mainSteps:
           . /etc/os-release
 
           case $ID in
-            ubuntu) osname="ubuntu"
+            ubuntu) osname="Debian" ; ext="deb"
             ;;
-            rhel) osname="redhat"
+            debian) osname="Debian" ; ext="deb"
             ;;
-            centos) osname="centos"
+            amzn) osname="Redhat" ; ext="rpm"
             ;;
-            arch) osname="arch"
+            rhel) osname="Redhat" ext="rpm"
             ;;
-            *) osname="Unable to determine the distribution"
+            *) osname="Not found"
             ;;
           esac
          
@@ -280,58 +286,85 @@ mainSteps:
 
           if [ "$architecture" = x86_64 ];
           then
+
               archcode="amd64"
+
           elif [ "$architecture" = ARM64 ]
           then
+
               archcode="arm64"
+
           else
-              echo "Unable to determine platform"
+
+              echo "Unknown Platform"
+
           fi
 
 
-          # Check if rapid7 is installed
+          # Install Rapid7 if not installed
 
           if systemctl is-active --quiet ir_agent.service
+
           then
+
               echo "Rapid7 agent is installed and running"
+
           else
-              version="$(ls rapid7*)"
-              version="$${version#rapid7-insight-agent_}"
-              version="$${version%-1_amd64.deb}"
-              architecture="$(uname -m)"
-           
-              if [ "$osname" = "ubuntu" ] && [ "$archcode" = amd64 ]
+              # Extracting Rapid7 version from the file name
+          
+              if [ -f rapid7-insight-agent-*".$ext" ]
               then
-                filename="rapid7-insight-agent-$${version}-1.$${archcode}.deb"
+
+                  r7=$(ls rapid7-insight-agent-*".$ext")
+                  version=$(sed 's/^.*agent-// ; s/-.*//' <<< "$r7")
+              fi
+              
+              # Installing the Rapid7 agent on Debian based OS
+
+              if [ "$osname" = "Debian" ] && [ "$archcode" = amd64 ]
+              then
+
+                filename="rapid7-insight-agent-$${version}-1.$${archcode}.$${ext}"
                 scriptLocation="/opt/rapid7/ir_agent/components/insight_agent/$${version}"
-                echo "Installing rapid7 version $version, $archcode package on $architecture system"
-                mv rapid* "$filename"
-                executable="$${wdir}/$${filename}"
-                apt-get install "$executable" -y
-                cd "$scriptLocation"
+                echo "Installing rapid7 version $version, $archcode package on $architecture based system"
+                rapid7="$${wdir}/$${filename}"
+                apt-get install "$rapid7" -y && cd "$scriptLocation"
                 ./configure_agent.sh --token {{ token }}
 
               else
-                echo "Rapid7: Incompatible distribution or architecture"
+
+                echo "Distribution or architecture not supported"
+
               fi
           fi
 
-          # Check if Sophos is installed
+          # Install Sophos if not installed
 
           if sudo systemctl is-active --quiet sophos-spl.service
           then
+
               echo "Sophos is installed and running"
+
           else
+
             sophos_executable="$${wdir}/SophosSetup.sh"
+
             if [ -f "$sophos_executable" ]
             then
-                echo "Installing Sophos ..."
+
                 cd "$wdir"
                 sudo chmod +x SophosSetup.sh && sudo ./SophosSetup.sh --do-not-disable-auditd
+
             else
-                echo "Unable to locate the SophosSetup.sh script "
+
+                echo "SophosSetup.sh not found"
+
             fi
           fi
+
+          # Make sure all services are enabled and started
+          systemctl enable --now ir_agent.service
+          systemctl enable --now sophos-spl.service
 
   - action: aws:runShellScript
     name: PostInstallationCleanup
