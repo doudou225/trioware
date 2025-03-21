@@ -15,7 +15,7 @@ variable "ssm_param_name" {
 
 variable "ssm_param_value" {
   type    = string
-  default = "123456789"
+  default = "us:2cfd9fd3-d885-411f-8b0b-d7510da96bd8"
 }
 
 variable "ssm_sophos_url_windows" {

@@ -1,9 +1,17 @@
 provider "aws" {
-  region = basename(path.cwd)
+  region  = basename(path.cwd)
+  profile = var.profile
 }
 
 module "create_s3_bucket" {
-  source = "../modules/s3"
+  source                  = "../modules/s3"
+  source_sophos_windows   = var.path_sophos_windows
+  source_sophos_linux     = var.path_sophos_linux
+  source_r7_windows       = var.path_r7_windows
+  source_r7_deb_linux_x64 = var.path_r7_deb_linux_x64
+  source_pmp_windows      = var.path_pmp_windows
+  source_pmp_linux        = var.path_pmp_linux
+  r7_linux_version        = var.r7_linux_version
 
 }
 

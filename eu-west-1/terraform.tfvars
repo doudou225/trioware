@@ -1,0 +1,7 @@
+#r7_linux_version      = "4.0.12.14"
+path_sophos_windows   = "C:\\software\\SophosSetup.exe"
+path_sophos_linux     = "C:\\software\\linux\\SophosSetup.sh"
+path_r7_windows       = "C:\\software\\agentInstaller-x86_64.msi"
+path_r7_deb_linux_x64 = "C:\\software\\linux\\rapid7-insight-agent_4.0.12.14-1_amd64.deb"
+path_pmp_windows      = "C:\\software\\pmp.zip"
+path_pmp_linux        = "C:\\software\\linux\\pmp_linux.zip"
